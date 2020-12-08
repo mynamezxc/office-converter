@@ -49,9 +49,14 @@ class OfficeConverter
         }
 
         $outdir = $this->tempPath;
-        $shell = $this->exec($this->makeCommand($outdir, $outputExtension));
-        if (0 != $shell['return']) {
-            throw new OfficeConverterException('Convertion Failure! Contact Server Admin.');
+
+        if(strpos(php_uname(), "Windows") !== false) {
+            shell_exec($this->makeCommand($outdir, $outputExtension));
+        } else {
+            $shell = $this->exec($this->makeCommand($outdir, $outputExtension));
+            if (0 != $shell['return']) {
+                throw new OfficeConverterException('Convertion Failure! Contact Server Admin.');
+            }
         }
 
         return $this->prepOutput($outdir, $filename, $outputExtension);
@@ -126,6 +131,10 @@ class OfficeConverter
     {
         $oriFile = escapeshellarg($this->file);
         $outputDirectory = escapeshellarg($outputDirectory);
+
+        if(strpos(php_uname(), "Windows") !== false) {
+            $this->bin = '"C:/Program Files/LibreOffice/program/soffice.exe"';
+        }
 
         return "{$this->bin} --headless --convert-to {$outputExtension} {$oriFile} --outdir {$outputDirectory}";
     }
